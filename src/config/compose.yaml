@@ -1,0 +1,8 @@
+name: catalog-services
+services:
+  database:
+    image: 'postgres:16.0-alpine3.18'
+    env_file:
+      - ../.env
+    ports:
+      - '54323:5432'
