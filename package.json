@@ -4,13 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/app.js"
+    "dev": "npm run services:up && nodemon src/app.js",
+    "services:up": "docker compose -f src/config/compose.yaml up -d",
+    "services:down": "docker compose -f src/config/compose.yaml down",
+    "services:stop": "docker compose -f src/config/compose.yaml stop",
+    "migration:create": "node-pg-migrate --migrations-dir ./src/migrations create",
+    "migration:run": "node -r dotenv-expand/config src/scripts/db-connection.js && node-pg-migrate up --envPath ./.env -m src/migrations"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.1",
+    "dotenv-expand": "^10.0.0",
     "express": "^4.18.2",
+    "node-pg-migrate": "^6.2.2",
     "pg": "^8.11.3"
   },
   "devDependencies": {
