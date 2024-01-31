@@ -14,11 +14,13 @@ exports.up = (pgm) => {
       type: 'text',
       notNull: true,
     },
-    ownerId: {
+    owner_id: {
       type: 'integer',
       notNull: true,
     },
   });
+
+  pgm.renameColumn(categories, 'ownerId', 'owner_id');
 };
 
 exports.down = (pgm) => {

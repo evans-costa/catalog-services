@@ -12,7 +12,7 @@ exports.up = (pgm) => {
       notNull: true,
     },
 
-    ownerId: {
+    owner_id: {
       type: 'integer',
       notNull: true,
     },
@@ -22,7 +22,7 @@ exports.up = (pgm) => {
       notNull: true,
     },
 
-    categoryId: {
+    category_id: {
       type: 'uuid',
       notNull: true,
       references: 'categories(id)',
