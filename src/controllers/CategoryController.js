@@ -9,7 +9,13 @@ export class CategoryController {
 
   async getAll(req, res) {
     const categoryService = new CategoryService();
-    const getAllCategories = await categoryService.findAllByOwner(req.body);
+    const getAllCategories = await categoryService.findAllByOwnerId(req.params);
     return res.status(200).json(getAllCategories);
+  }
+
+  async update(req, res) {
+    const categoryService = new CategoryService();
+    await categoryService.update(req.body, req.params.id);
+    return res.status(200).json({ message: 'Category updated successfully.' });
   }
 }
