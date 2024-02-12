@@ -9,7 +9,7 @@ export class ProductController {
 
   async getAll(req, res) {
     const productService = new ProductService();
-    const getAllProducts = await productService.findAllByOwner(req.body);
+    const getAllProducts = await productService.findAllByOwner(req.params);
     return res.status(200).json(getAllProducts);
   }
 }
