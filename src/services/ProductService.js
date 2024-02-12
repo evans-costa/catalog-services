@@ -16,10 +16,11 @@ export class ProductService {
     }
 
     const categoryService = new CategoryService();
-    const categoryExists = await categoryService.findOneById(
-      productData.category_id,
-      productData.owner_id
-    );
+    const categoryExists = await categoryService.findOneByOwnerId(productData.category_id, productData.owner_id);
+
+    if (!categoryExists) {
+      throw new AppError('Category does not exists for this owner.', 404);
+    }
 
     const queryInsertProduct = {
       text: `
@@ -44,10 +45,10 @@ export class ProductService {
     return newProduct;
   }
 
-  async findAllByOwner({ owner_id }) {
+  async findAllByOwner({ ownerId }) {
     const queryFindAll = {
       text: 'SELECT * FROM products WHERE owner_id = $1;',
-      values: [owner_id],
+      values: [ownerId],
     };
 
     const result = await database.query(queryFindAll);
