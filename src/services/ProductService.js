@@ -141,4 +141,24 @@ export class ProductService {
 
     return result.rows[0];
   }
+
+  async delete(productId) {
+    const queryProductExist = {
+      text: `SELECT * FROM products WHERE id = $1;`,
+      values: [productId],
+    };
+
+    const productExist = await database.query(queryProductExist);
+
+    if (productExist.rowCount === 0) {
+      throw new AppError('Product does not exists.', 404);
+    }
+
+    const queryDeleteProduct = {
+      text: `DELETE FROM products WHERE id = $1;`,
+      values: [productId],
+    };
+
+    await database.query(queryDeleteProduct);
+  }
 }

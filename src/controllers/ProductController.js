@@ -18,4 +18,10 @@ export class ProductController {
     const updateProduct = await productService.update(req.body, req.params.id);
     return res.status(200).json(updateProduct);
   }
+
+  async delete(req, res) {
+    const productService = new ProductService();
+    const deleteProduct = await productService.delete(req.params.id);
+    return res.status(200).json(deleteProduct);
+  }
 }
