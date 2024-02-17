@@ -19,8 +19,6 @@ exports.up = (pgm) => {
       notNull: true,
     },
   });
-
-  pgm.renameColumn(categories, 'ownerId', 'owner_id');
 };
 
 exports.down = (pgm) => {
