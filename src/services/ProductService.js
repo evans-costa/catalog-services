@@ -4,19 +4,14 @@ import { CategoryService } from './CategoryService';
 
 export class ProductService {
   async add(productData) {
-    const queryFindOneProduct = {
-      text: `SELECT title, owner_id FROM products WHERE title = $1 AND owner_id = $2`,
-      values: [productData.title, productData.owner_id],
-    };
+    const productAlreadyExists = await this.findOneByTitle(productData.title, productData.owner_id);
 
-    const productAlreadyExists = await database.query(queryFindOneProduct);
-
-    if (productAlreadyExists.rowCount > 0) {
+    if (productAlreadyExists) {
       throw new AppError('Product already exists.', 409);
     }
 
     const categoryService = new CategoryService();
-    const categoryExists = await categoryService.findOneByOwnerId(productData.category_id, productData.owner_id);
+    const categoryExists = await categoryService.findOneById(productData.category_id, productData.owner_id);
 
     if (!categoryExists) {
       throw new AppError('Category does not exists for this owner.', 404);
@@ -47,7 +42,25 @@ export class ProductService {
 
   async findAllByOwner({ ownerId }) {
     const queryFindAll = {
-      text: 'SELECT * FROM products WHERE owner_id = $1;',
+      text: `
+        SELECT 
+          p.id AS id,
+          p.title AS title,
+          p.owner_id AS owner_id,
+          p.description AS description,
+          p.price AS price,
+          jsonb_build_object(
+            'id', c.id,
+            'title', c.title,
+            'description', c.description,
+            'owner_id', c.owner_id
+          ) AS category
+        FROM
+            products p
+        LEFT JOIN
+            categories c ON p.category_id = c.id
+        WHERE
+            p.owner_id = $1;`,
       values: [ownerId],
     };
 
@@ -58,5 +71,74 @@ export class ProductService {
     }
 
     return result.rows;
+  }
+
+  async findOneById(productId, ownerId) {
+    const queryFindOneProduct = {
+      text: `SELECT * FROM products WHERE id = $1 AND owner_id = $2;`,
+      values: [productId, ownerId],
+    };
+
+    const result = await database.query(queryFindOneProduct);
+
+    return result.rows[0];
+  }
+
+  async findOneByTitle(title, ownerId) {
+    const queryFindByTitle = {
+      text: `SELECT * FROM products WHERE title = $1 AND owner_id = $2;`,
+      values: [title, ownerId],
+    };
+
+    const result = await database.query(queryFindByTitle);
+
+    return result.rows[0];
+  }
+
+  async update(productData, productId) {
+    const productExists = await this.findOneById(productId, productData.owner_id);
+
+    if (!productExists) {
+      throw new AppError('Product does not exists for this owner.', 404);
+    }
+
+    if (productData.category_id) {
+      const categoryService = new CategoryService();
+      const categoryExists = await categoryService.findOneById(productData.category_id, productData.owner_id);
+
+      if (!categoryExists) {
+        throw new AppError('Category does not exists for this owner.', 404);
+      }
+    }
+
+    if (productData.title) {
+      const productAlreadyExists = await this.findOneByTitle(productData.title, productData.owner_id);
+
+      if (productAlreadyExists) {
+        throw new AppError('Product already exists.', 409);
+      }
+    }
+
+    const queryUpdateProduct = {
+      text: `
+        UPDATE 
+          products 
+        SET title = $1, owner_id = $2, description = $3, category_id = $4, price = $5 
+        WHERE 
+          id = $6;
+        `,
+      values: [
+        productData.title ?? productExists.title,
+        productData.owner_id ?? productExists.owner_id,
+        productData.description ?? productExists.description,
+        productData.category_id ?? productExists.category_id,
+        productData.price ?? productExists.price,
+        productId,
+      ],
+    };
+
+    const result = await database.query(queryUpdateProduct);
+
+    return result.rows[0];
   }
 }

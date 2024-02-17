@@ -12,4 +12,10 @@ export class ProductController {
     const getAllProducts = await productService.findAllByOwner(req.params);
     return res.status(200).json(getAllProducts);
   }
+
+  async update(req, res) {
+    const productService = new ProductService();
+    const updateProduct = await productService.update(req.body, req.params.id);
+    return res.status(200).json(updateProduct);
+  }
 }

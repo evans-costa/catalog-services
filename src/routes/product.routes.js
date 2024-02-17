@@ -8,4 +8,6 @@ productRoutes.get('/:ownerId', (req, res) => productController.getAll(req, res))
 
 productRoutes.post('/', (req, res) => productController.create(req, res));
 
+productRoutes.put('/:id', (req, res) => productController.update(req, res));
+
 export default productRoutes;
