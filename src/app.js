@@ -5,6 +5,7 @@ import logger from './logger';
 import productRoutes from './routes/product.routes';
 import categoryRoutes from './routes/category.routes';
 import { AppError } from './errors/AppError';
+import { ValidationError } from 'joi';
 
 const app = express();
 
@@ -18,6 +19,13 @@ app.use((err, req, res, next) => {
   if (err instanceof AppError) {
     logger.error(err);
     return res.status(err.statusCode).json({
+      message: err.message,
+    });
+  }
+
+  if (err instanceof ValidationError) {
+    logger.error(err);
+    return res.status(400).json({
       message: err.message,
     });
   }
