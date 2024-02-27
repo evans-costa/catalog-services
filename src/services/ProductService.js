@@ -1,5 +1,6 @@
 import database from '../config/database';
 import { AppError } from '../errors/AppError';
+import { AWSSNS, AWSSNS } from '../libs/aws';
 import { CategoryService } from './CategoryService';
 
 export class ProductService {
@@ -36,6 +37,9 @@ export class ProductService {
     const newProduct = resultProductCreated.rows[0];
 
     newProduct.category = categoryExists;
+
+    const awsSNS = new AWSSNS();
+    await awsSNS.publishToTopic({ owner: productData.owner_id });
 
     return newProduct;
   }
@@ -138,6 +142,9 @@ export class ProductService {
     };
 
     const result = await database.query(queryUpdateProduct);
+
+    const awsSNS = new AWSSNS();
+    await awsSNS.publishToTopic({ owner: productData.onwer_id });
 
     return result.rows[0];
   }
