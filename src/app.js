@@ -4,6 +4,7 @@ import { pinoHttp } from 'pino-http';
 import logger from './logger';
 import productRoutes from './routes/product.routes';
 import categoryRoutes from './routes/category.routes';
+import catalogRoutes from './routes/catalog.routes';
 import { AppError } from './errors/AppError';
 import { ValidationError } from 'joi';
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use('/products', productRoutes);
 app.use('/categories', categoryRoutes);
+app.use('/catalog', catalogRoutes);
 
 app.use((err, req, res, next) => {
   if (err instanceof AppError) {
