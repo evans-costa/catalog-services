@@ -99,6 +99,17 @@ export class ProductService {
     return result.rows[0];
   }
 
+  async findOneByCategory(categoryId, ownerId) {
+    const queryFindProductByCategory = {
+      text: `SELECT * FROM products WHERE owner_id = $1 AND category_id = $2;`,
+      values: [ownerId, categoryId],
+    };
+
+    const result = await database.query(queryFindProductByCategory);
+
+    return result.rows;
+  }
+
   async update(productData, productId) {
     const productExists = await this.findOneById(productId, productData.owner_id);
 
