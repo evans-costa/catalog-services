@@ -1,10 +1,11 @@
 import 'express-async-errors';
 import express from 'express';
-import { pinoHttp } from 'pino-http';
+import pinoHttp from 'pino-http';
 import logger from './logger';
 import productRoutes from './routes/product.routes';
 import categoryRoutes from './routes/category.routes';
 import catalogRoutes from './routes/catalog.routes';
+import { sqsConsumer } from './libs/consumer';
 import { AppError } from './errors/AppError';
 import { ValidationError } from 'joi';
 
@@ -38,10 +39,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.listen(port, () => {
-  logger.info(`Server listen on port ${port}`);
+app.listen(PORT, () => {
+  logger.info(`Server listen on port ${PORT}`);
+  sqsConsumer();
 });
 
 export default app;
