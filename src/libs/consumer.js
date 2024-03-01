@@ -1,7 +1,6 @@
 import { AWSSQS } from './aws';
 import { Consumer } from 'sqs-consumer';
 import { CatalogService } from '../services/CatalogService';
-import logger from '../logger';
 
 export function sqsConsumer() {
   const awsSQS = new AWSSQS();
@@ -20,11 +19,11 @@ export function sqsConsumer() {
   });
 
   consumer.on('error', (err) => {
-    logger.error(err);
+    console.error(err);
   });
 
   consumer.on('processing_error', (err) => {
-    logger.error(err);
+    console.error(err);
   });
 
   consumer.start();
