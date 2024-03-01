@@ -45,8 +45,9 @@ export class AWSS3 {
 
     try {
       const response = await this.#s3.send(command);
+      return response;
     } catch (err) {
-      logger.error(err);
+      throw err;
     }
   }
 
@@ -62,7 +63,7 @@ export class AWSS3 {
       const stream = await response.Body.transformToString();
       return JSON.parse(stream);
     } catch (err) {
-      logger.error(err);
+      throw err;
     }
   }
 }
