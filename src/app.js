@@ -8,6 +8,7 @@ import catalogRoutes from './routes/catalog.routes';
 import { sqsConsumer } from './libs/consumer';
 import { AppError } from './errors/AppError';
 import { ValidationError } from 'joi';
+import { NoSuchKey } from '@aws-sdk/client-s3';
 
 const app = express();
 
@@ -19,21 +20,26 @@ app.use('/categories', categoryRoutes);
 app.use('/catalog', catalogRoutes);
 
 app.use((err, req, res, next) => {
+  logger.error(err);
+
   if (err instanceof AppError) {
-    logger.error(err);
     return res.status(err.statusCode).json({
       message: err.message,
     });
   }
 
   if (err instanceof ValidationError) {
-    logger.error(err);
     return res.status(400).json({
       message: err.message,
     });
   }
 
-  logger.error(err);
+  if (err instanceof NoSuchKey) {
+    return res.status(404).json({
+      message: 'Catalog not found',
+    });
+  }
+
   return res.status(500).json({
     message: 'Internal server error',
   });
