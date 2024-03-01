@@ -4,46 +4,6 @@ import { AWSSNS, AWSSNS } from '../libs/aws';
 import { CategoryService } from './CategoryService';
 
 export class ProductService {
-  async add(productData) {
-    const productAlreadyExists = await this.findOneByTitle(productData.title, productData.owner_id);
-
-    if (productAlreadyExists) {
-      throw new AppError('Product already exists.', 409);
-    }
-
-    const categoryService = new CategoryService();
-    const categoryExists = await categoryService.findOneById(productData.category_id, productData.owner_id);
-
-    if (!categoryExists) {
-      throw new AppError('Category does not exists for this owner.', 404);
-    }
-
-    const queryInsertProduct = {
-      text: `
-        INSERT INTO products (title, owner_id, description, category_id, price) 
-        VALUES ($1, $2, $3, $4, $5) 
-        RETURNING title, owner_id, price, description;
-      `,
-      values: [
-        productData.title,
-        productData.owner_id,
-        productData.description,
-        productData.category_id,
-        productData.price,
-      ],
-    };
-
-    const resultProductCreated = await database.query(queryInsertProduct);
-    const newProduct = resultProductCreated.rows[0];
-
-    newProduct.category = categoryExists;
-
-    const awsSNS = new AWSSNS();
-    await awsSNS.publishToTopic({ owner: productData.owner_id });
-
-    return newProduct;
-  }
-
   async findAllByOwner({ ownerId }) {
     const queryFindAll = {
       text: `
@@ -110,6 +70,46 @@ export class ProductService {
     return result.rows;
   }
 
+  async add(productData) {
+    const productAlreadyExists = await this.findOneByTitle(productData.title, productData.owner_id);
+
+    if (productAlreadyExists) {
+      throw new AppError('Product already exists.', 409);
+    }
+
+    const categoryService = new CategoryService();
+    const categoryExists = await categoryService.findOneById(productData.category_id, productData.owner_id);
+
+    if (!categoryExists) {
+      throw new AppError('Category does not exists for this owner.', 404);
+    }
+
+    const queryInsertProduct = {
+      text: `
+        INSERT INTO products (title, owner_id, description, category_id, price) 
+        VALUES ($1, $2, $3, $4, $5) 
+        RETURNING *;
+      `,
+      values: [
+        productData.title,
+        productData.owner_id,
+        productData.description,
+        productData.category_id,
+        productData.price,
+      ],
+    };
+
+    const resultProductCreated = await database.query(queryInsertProduct);
+    const newProduct = resultProductCreated.rows[0];
+
+    newProduct.category = categoryExists;
+
+    const awsSNS = new AWSSNS();
+    await awsSNS.publishToTopic({ owner: productData.owner_id });
+
+    return newProduct;
+  }
+
   async update(productData, productId) {
     const productExists = await this.findOneById(productId, productData.owner_id);
 
@@ -167,6 +167,7 @@ export class ProductService {
     };
 
     const productExist = await database.query(queryProductExist);
+    const ownerId = productExist.rows[0].owner_id;
 
     if (productExist.rowCount === 0) {
       throw new AppError('Product does not exists.', 404);
@@ -178,5 +179,8 @@ export class ProductService {
     };
 
     await database.query(queryDeleteProduct);
+
+    const awsSNS = new AWSSNS();
+    await awsSNS.publishToTopic({ owner: ownerId });
   }
 }
