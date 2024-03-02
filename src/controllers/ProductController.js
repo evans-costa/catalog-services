@@ -22,6 +22,6 @@ export class ProductController {
   async delete(req, res) {
     const productService = new ProductService();
     const deleteProduct = await productService.delete(req.params.id);
-    return res.status(200).json(deleteProduct);
+    return res.status(204).json(deleteProduct);
   }
 }
