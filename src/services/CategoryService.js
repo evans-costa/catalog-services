@@ -48,6 +48,10 @@ export class CategoryService {
 
     const result = await database.query(queryFindOneById);
 
+    if (result.rowCount === 0) {
+      throw new AppError('Category does not exists for this owner.', 404);
+    }
+
     return result.rows[0];
   }
 
