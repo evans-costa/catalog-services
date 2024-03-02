@@ -30,6 +30,10 @@ export class ProductService {
 
     const result = await database.query(queryFindAll);
 
+    if (!result) {
+      throw new AppError('Invalid owner id.');
+    }
+
     if (result.rowCount === 0) {
       throw new AppError('There is no products associated with this owner', 404);
     }
@@ -44,6 +48,10 @@ export class ProductService {
     };
 
     const result = await database.query(queryFindOneProduct);
+
+    if (!result) {
+      throw new AppError('Invalid product id.');
+    }
 
     return result.rows[0];
   }
@@ -80,10 +88,6 @@ export class ProductService {
     const categoryService = new CategoryService();
     const categoryExists = await categoryService.findOneById(productData.category_id, productData.owner_id);
 
-    if (!categoryExists) {
-      throw new AppError('Category does not exists for this owner.', 404);
-    }
-
     const queryInsertProduct = {
       text: `
         INSERT INTO products (title, owner_id, description, category_id, price) 
@@ -119,11 +123,7 @@ export class ProductService {
 
     if (productData.category_id) {
       const categoryService = new CategoryService();
-      const categoryExists = await categoryService.findOneById(productData.category_id, productData.owner_id);
-
-      if (!categoryExists) {
-        throw new AppError('Category does not exists for this owner.', 404);
-      }
+      await categoryService.findOneById(productData.category_id, productData.owner_id);
     }
 
     if (productData.title) {
@@ -140,8 +140,8 @@ export class ProductService {
           products 
         SET title = $1, owner_id = $2, description = $3, category_id = $4, price = $5 
         WHERE 
-          id = $6;
-        `,
+          id = $6
+        RETURNING title, owner_id, description, category_id, price;`,
       values: [
         productData.title ?? productExists.title,
         productData.owner_id ?? productExists.owner_id,
@@ -167,7 +167,10 @@ export class ProductService {
     };
 
     const productExist = await database.query(queryProductExist);
-    const ownerId = productExist.rows[0].owner_id;
+
+    if (!productExist) {
+      throw new AppError('Invalid product id.');
+    }
 
     if (productExist.rowCount === 0) {
       throw new AppError('Product does not exists.', 404);
@@ -179,6 +182,8 @@ export class ProductService {
     };
 
     await database.query(queryDeleteProduct);
+
+    const ownerId = productExist.rows[0].owner_id;
 
     const awsSNS = new AWSSNS();
     await awsSNS.publishToTopic({ owner: ownerId });
