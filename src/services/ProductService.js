@@ -53,6 +53,10 @@ export class ProductService {
       throw new AppError('Invalid product id.');
     }
 
+    if (result.rowCount === 0) {
+      throw new AppError('Product does not exists for this owner.', 404);
+    }
+
     return result.rows[0];
   }
 
@@ -117,10 +121,6 @@ export class ProductService {
   async update(productData, productId) {
     const productExists = await this.findOneById(productId, productData.owner_id);
 
-    if (!productExists) {
-      throw new AppError('Product does not exists for this owner.', 404);
-    }
-
     if (productData.category_id) {
       const categoryService = new CategoryService();
       await categoryService.findOneById(productData.category_id, productData.owner_id);
@@ -153,6 +153,10 @@ export class ProductService {
     };
 
     const result = await database.query(queryUpdateProduct);
+
+    if (result.rowCount === 0) {
+      throw new AppError('Cannot update product, verify the data and try again.');
+    }
 
     const awsSNS = new AWSSNS();
     await awsSNS.publishToTopic({ owner: productData.onwer_id });
