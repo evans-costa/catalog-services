@@ -33,6 +33,10 @@ export class CategoryService {
 
     const result = await database.query(queryFindAll);
 
+    if (!result) {
+      throw new AppError('Invalid category id.');
+    }
+
     if (result.rowCount === 0) {
       throw new AppError('Category does not exists for this owner.', 404);
     }
@@ -48,6 +52,10 @@ export class CategoryService {
 
     const result = await database.query(queryFindOneById);
 
+    if (!result) {
+      throw new AppError('Invalid category id.');
+    }
+
     if (result.rowCount === 0) {
       throw new AppError('Category does not exists for this owner.', 404);
     }
@@ -55,11 +63,26 @@ export class CategoryService {
     return result.rows[0];
   }
 
+  async findOneByTitle(title, ownerId) {
+    const queryFindByTitle = {
+      text: `SELECT * FROM categories WHERE title = $1 AND owner_id = $2;`,
+      values: [title, ownerId],
+    };
+
+    const result = await database.query(queryFindByTitle);
+
+    return result.rows[0];
+  }
+
   async update(categoryData, categoryId) {
     const categoryExists = await this.findOneById(categoryId, categoryData.owner_id);
 
-    if (!categoryExists) {
-      throw new AppError('Category does not exists for this owner.', 404);
+    if (categoryData.title) {
+      const categoryAlreadyExists = await this.findOneByTitle(categoryData.title, categoryData.owner_id);
+
+      if (categoryAlreadyExists) {
+        throw new AppError('Category already exists', 409);
+      }
     }
 
     const queryUpdateById = {
@@ -74,7 +97,7 @@ export class CategoryService {
 
     const result = await database.query(queryUpdateById);
 
-    if (result.rowsCount === 0) {
+    if (result.rowCount === 0) {
       throw new AppError('Cannot update category, verify the data and try again.');
     }
 
@@ -88,6 +111,10 @@ export class CategoryService {
     };
 
     const categoryExists = await database.query(queryCategoryExists);
+
+    if (!categoryExists) {
+      throw new AppError('Invalid category id.');
+    }
 
     if (categoryExists.rowCount === 0) {
       throw new AppError('Category does not exists.', 404);
