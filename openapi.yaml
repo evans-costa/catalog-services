@@ -1,0 +1,476 @@
+openapi: 3.1.0
+info:
+  title: Catálogo de produtos
+  description: |-
+    Catálogo de produtos por categorias, onde você pode alterar, deletar e excluir produtos e categorias, além de ter acesso ao catálogo completo por owner.
+
+    Alguns links úteis:
+    - [O repositório da API](https://github.com/evans-costa/catalog-services)
+    - [A documentação da API ](https://github.com/evans-costa/catalog-services/blob/main/openapi.yaml)
+  version: 1.0.0
+tags:
+  - name: products
+    description: Operações com os produtos
+  - name: categories
+    description: Operações com as categorias
+  - name: catalog
+    description: Listagem do catálogo
+
+paths:
+  /products/:
+    post:
+      tags:
+        - products
+      summary: Adiciona um produto
+      description: Adiciona um produto no catálogo do owner
+      requestBody:
+        description: Cria um produto no catálogo
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      responses:
+        '201':
+          description: Produto criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Categoria não encontrada
+          content:
+            application/json:
+              example:
+                message: Category does not exist for this owner.
+        '409':
+          description: Produto já foi cadastrado
+          content:
+            application/json:
+              example:
+                message: Product already exists.
+
+  /products/{ownerId}:
+    get:
+      tags:
+        - products
+      summary: Listar todos os produtos
+      description: Listar todos os produtos associados a um ID de owner
+      parameters:
+        - name: ownerId
+          in: path
+          description: ID do owner que os produtos pertencem
+          required: true
+          schema:
+            type: number
+            format: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfProducts'
+        '400':
+          description: Owner id inválido
+          content:
+            application/json:
+              example:
+                message: Invalid owner id.
+        '404':
+          description: Produto não encontrado associado a esse id de Owner
+          content:
+            application/json:
+              example:
+                message: There is no products associated with this owner.
+
+  /products/{id}:
+    put:
+      tags:
+        - products
+      summary: Atualizar um produto já existente
+      description: Atualizar um produto já existente pelo seu ID
+      parameters:
+        - name: id
+          in: path
+          description: ID do produto que será atualizado
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Atualiza um produto existente no catálogo
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Erro ao atualizar o produto
+          content:
+            application/json:
+              examples:
+                ID do Produto:
+                  value:
+                    message: Invalid product id.
+                owner_id não informado:
+                  value:
+                    message: owner_id is required.
+                Erro ao atualizar:
+                  value:
+                    message: Cannot update product, verify the data and try again.
+        '404':
+          description: Produto ou Categoria não encontrados
+          content:
+            application/json:
+              examples:
+                Categoria:
+                  value:
+                    message: Category does not exist for this owner.
+                Produto:
+                  value:
+                    message: Product does not exist for this owner.
+    delete:
+      tags:
+        - products
+      summary: Deletar um produto já existente
+      description: Deletar um produto do catálogo pelo seu ID
+      parameters:
+        - name: id
+          in: path
+          description: ID do produto que será deletado
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Produto foi deletado com sucesso.
+        '400':
+          description: ID do produto inválido
+          content:
+            application/json:
+              example:
+                message: Invalid product id.
+        '404':
+          description: Produto não encontrado
+          content:
+            application/json:
+              example:
+                message: Product does not exists.
+
+  /categories/:
+    post:
+      tags:
+        - categories
+      summary: Adiciona uma categoria
+      description: Adiciona uma categoria de produto
+      requestBody:
+        description: Cria uma categoria de produto
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Doces
+                description:
+                  type: string
+                  example: Doces em geral (bolos, bombons, balas, tortas)
+                owner_id:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Categoria criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '409':
+          description: Categoria já existe para este owner
+          content:
+            application/json:
+              example:
+                message: Category already exists.
+  /categories/{ownerId}:
+    get:
+      tags:
+        - categories
+      summary: Listar todas as categorias
+      description: Listar todas as categorias por ID do owner
+      parameters:
+        - name: ownerId
+          in: path
+          description: ID do owner que os produtos pertencem
+          required: true
+          schema:
+            type: number
+            format: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayOfCategories'
+        '400':
+          description: ID da categoria inválido
+          content:
+            application/json:
+              example:
+                message: Invalid category id.
+        '404':
+          description: Categoria não encontrada para esse owner
+          content:
+            application/json:
+              example:
+                message: Category does not exists for this owner.
+
+  /categories/{id}:
+    put:
+      tags:
+        - categories
+      summary: Atualiza uma categoria já existente
+      description: Atualiza uma categoria já existente pelo seu ID
+      parameters:
+        - name: id
+          in: path
+          description: ID da categoria que será atualizada
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Atualiza uma categoria existente
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Doces
+                description:
+                  type: string
+                  example: Doces em geral (bolos, bombons, balas, tortas)
+                owner_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '409':
+          description: Categoria já existe
+          content:
+            application/json:
+              example:
+                message: Category already exists.
+        '400':
+          description: Erro ao atualizar a categoria
+          content:
+            application/json:
+              examples:
+                ID inválido:
+                  value:
+                    message: Invalid category id.
+                owner_id não informado:
+                  value:
+                    message: owner_id is required.
+                Erro ao atualizar:
+                  value:
+                    message: Cannot update category, verify the data and try again.
+        '404':
+          description: Categoria não existe para esse owner.
+          content:
+            application/json:
+              example:
+                message: Category does not exist for this owner.
+    delete:
+      tags:
+        - categories
+      summary: Deleta uma categoria já existente
+      description: Deleta uma categoria já existente pelo seu ID
+      parameters:
+        - name: id
+          in: path
+          description: ID da categoria que será deletada
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Categoria foi deletada com sucesso.
+        '400':
+          description: ID da categoria inválido
+          content:
+            application/json:
+              example:
+                message: Invalid category id.
+        '404':
+          description: Categoria não encontrado
+          content:
+            application/json:
+              example:
+                message: Category does not exists.
+
+  /catalog/{ownerId}:
+    get:
+      tags:
+        - catalog
+      summary: Listar o catálogo do owner
+      description: Listar o catálog pelo ID do owner
+      parameters:
+        - name: ownerId
+          in: path
+          description: ID do owner que o catálogo pertence
+          required: true
+          schema:
+            type: number
+            format: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+        '404':
+          description: Catálogo não encontrado para esse owner
+          content:
+            application/json:
+              example:
+                message: Catalog not found.
+
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - owner_id
+      properties:
+        title:
+          type: string
+          example: Bolo de morango
+        owner_id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          example: Bolo branco com recheio de morango e deliciosa cobertura
+        category_id:
+          type: string
+          format: uuid
+        price:
+          type: number
+          format: float
+          example: 80.99
+
+    ArrayOfProducts:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          title:
+            type: string
+            example: Bolo de morango
+          owner_id:
+            type: number
+            format: integer
+            example: 12345
+          description:
+            type: string
+            example: Bolo branco com recheio de morango e deliciosa cobertura
+          price:
+            type: number
+            format: float
+            example: 80.99
+          category:
+            $ref: '#/components/schemas/Category'
+
+    Category:
+      type: object
+      required:
+        - owner_id
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Doces
+        description:
+          type: string
+          example: Doces em geral (bolos, bombons, balas, tortas)
+        owner_id:
+          type: number
+          format: integer
+          example: 12345
+
+    ArrayOfCategories:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uuid
+          title:
+            type: string
+            example: Doces
+          description:
+            type: string
+            example: Doces em geral (bolos, bombons, balas, tortas)
+          owner_id:
+            type: number
+            format: integer
+            example: 12345
+    Catalog:
+      type: object
+      properties:
+        owner:
+          type: number
+          format: integer
+          example: 12345
+        catalog:
+          type: array
+          items:
+            type: object
+            properties:
+              category_title:
+                type: string
+                example: Doces
+              category_description:
+                type: string
+                example: Doces em geral (bolos, bombons, balas, tortas)
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      example: Bolo de Morango
+                    description:
+                      type: string
+                      example: Bolo branco com recheio de morango e deliciosa cobertura
+                    price:
+                      type: number
+                      format: float
+                      example: 80.99
