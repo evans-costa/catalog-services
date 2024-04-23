@@ -3,7 +3,7 @@
    Catalog Service
   <br>
 </h1>
-<h4 align="center">A poll creator using <a href="https://https://nodejs.org/" target="_blank">Node.js</a>, <a href="https://expressjs.com/" target="_blank">Express</a> and <a href="https://aws.amazon.com/pt/?nc2=h_lg">AWS SQS and SNS</a> services</h4>
+<h4 align="center">A catalog marketplace service using <a href="https://https://nodejs.org/" target="_blank">Node.js</a>, <a href="https://expressjs.com/" target="_blank">Express</a> and <a href="https://aws.amazon.com/pt/?nc2=h_lg">AWS SQS and SNS</a> services</h4>
 
 <div align='center'>
 
