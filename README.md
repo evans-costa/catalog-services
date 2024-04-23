@@ -12,8 +12,6 @@
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
 
-</div>
-
 <p align="center">
   <a href="#key-features">Key Features</a> •
   <a href="#motivation">Motivation</a> •
@@ -21,6 +19,11 @@
   <a href="#credits">Credits</a> •
   <a href="#license">License</a>
 </p>
+
+![screenshot](https://github.com/evans-costa/catalog-services/assets/110299322/c090e96c-df1f-40c8-81db-af86ab0d0d16)
+
+</div>
+
 
 ## Key Features
 
