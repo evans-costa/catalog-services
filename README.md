@@ -33,7 +33,7 @@
   
 ## Motivation
 
-My biggest challenge developing this project was learn a notification service that listening to a consumer. With this project, I learn the basics of a notification and message services, and how can I implement this using Node and PostgreSQL as well. Also, I learned logging mechanisms, using Pino to create a `.log` file, handle errors properly and validation fields using Joi
+My biggest challenge developing this project was learn a notification service that listening to a consumer. With this project, I learn the basics of a notification and message services, and how can I implement this using Node and PostgreSQL as well. Also, I learned logging mechanisms, using Pino to create a `.log` file, handle errors properly and validate fields using Joi
 
 ## How To Use
 
